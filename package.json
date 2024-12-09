@@ -1,0 +1,21 @@
+{
+  "name": "restful-api-cucumber",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^11.1.0",
+    "chai": "^5.1.2",
+    "cucumber": "^6.0.7",
+    "supertest": "^7.0.0"
+  }
+}
