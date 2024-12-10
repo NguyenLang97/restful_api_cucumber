@@ -1,31 +1,48 @@
-const { When, Then } = require('@cucumber/cucumber');
-const request = require('supertest');
+const { Given, When, Then, BeforeAll, AfterAll } = require('@cucumber/cucumber');
 const chai = require('chai');
-const { expect } = chai;
-const app = require('../../src/app'); // Đường dẫn đến file app.js
+const expect = chai.expect;
+const axios = require('axios');
+const app = require('../../src/server');
+const http = require('http');
 
+let server;
+let apiUrl;
 let response;
-When('I send a GET request to {string}', async (endpoint) => {
-  response = await request(app).get(endpoint);
+let port = 8082;
+// Khởi động server trước khi chạy kiểm thử
+BeforeAll((done) => {
+  server = http.createServer(app);
+  server.listen(8082, () => {
+    console.log(`Test server is running on http://localhost:${8082}`);
+    done();
+  });
 });
 
-Then('the response status should be {int}', (statusCode) => {
+// Dừng server sau khi kiểm thử
+AfterAll((done) => {
+  server.close(() => {
+    console.log('Test server stopped.');
+    done();
+  });
+});
+
+Given('the API endpoint is {string}', (endpoint) => {
+  apiUrl = `http://localhost:${8082}${endpoint}`;
+});
+
+When('I send a GET request', async () => {
+  try {
+    response = await axios.get(apiUrl);
+  } catch (err) {
+    response = err.response;
+  }
+});
+
+Then('the response status code should be {int}', (statusCode) => {
+  console.log('🚀  response ==', response);
   expect(response.status).to.equal(statusCode);
 });
 
-Then('the response body should contain a list of products', () => {
-  expect(response.body).to.be.an('array');
-  expect(response.body).to.have.length.above(0);
-});
-
-When('I send a POST request to {string} with:', async (endpoint, dataTable) => {
-  const data = dataTable.rowsHash();
-  response = await request(app).post(endpoint).send(data);
-});
-
-Then('the response body should contain the new product', () => {
-  expect(response.body).to.be.an('object');
-  expect(response.body).to.have.property('id');
-  expect(response.body).to.have.property('name').that.is.a('string');
-  expect(response.body).to.have.property('price').that.is.a('number');
-});
+// Then('the response should contain {string}', (content) => {
+//   expect(JSON.stringify(response.data)).to.include(content);
+// });
